@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Data;
 using System.Windows.Forms;
 using Laba1OOP.Class;
 
@@ -9,30 +8,19 @@ namespace Laba1OOP
     public partial class Form1 : Form
     {
         private MonitorManager _manager = new MonitorManager();
-        private List<Monitor> _currentView = new List<Monitor>();
 
         public Form1()
         {
             InitializeComponent();
             _manager.SetupDataGridView(dataGridView1);
             _manager.LoadInitialData();
-            ShowMonitors(_manager.GetAll());
+            ShowTable(_manager.GetAllTable());
         }
 
-        private void ShowMonitors(List<Monitor> list)
+        // Показ таблиці, отриманої від менеджера
+        private void ShowTable(DataTable table)
         {
-            _currentView = list;
-
-            dataGridView1.DataSource = list.Select(m => new
-            {
-                Model = m.GetModel(),
-                Diagonal = m.GetDiagonal(),
-                RefreshRate = m.GetRefreshRate(),
-                Price = m.GetPrice(),
-                HasHdr = m.GetHasHdr(),
-                GamingIndex = m.GetGamingIndex(),
-                PricePerInch = m.GetPricePerInch()
-            }).ToList();
+            dataGridView1.DataSource = table;
         }
 
         // Кнопка "Додати"
@@ -40,15 +28,12 @@ namespace Laba1OOP
         {
             try
             {
-                Monitor monitor = new Monitor(
+                ShowTable(_manager.AddMonitor(
                     textBox1.Text,
                     (double)numericUpDown1.Value,
                     (int)numericUpDown2.Value,
                     numericUpDown3.Value,
-                    checkBox1.Checked);
-
-                _manager.Add(monitor);
-                ShowMonitors(_manager.GetAll());
+                    checkBox1.Checked));
 
                 textBox1.Clear();
                 numericUpDown1.Value = numericUpDown1.Minimum;
@@ -66,31 +51,19 @@ namespace Laba1OOP
         // Кнопка "Показати все"
         private void button2_Click(object sender, EventArgs e)
         {
-            ShowMonitors(_manager.GetAll());
+            ShowTable(_manager.GetAllTable());
         }
 
         // Кнопка "Пошук 144 Гц"
         private void button3_Click(object sender, EventArgs e)
         {
-            ShowMonitors(_manager.FindByRefreshRate(144));
+            ShowTable(_manager.GetByRefreshRateTable(144));
         }
 
         // Кнопка "Найдешевший HDR"
         private void button4_Click(object sender, EventArgs e)
         {
-            Monitor cheapest = _manager.FindCheapestHdr();
-
-            if (cheapest != null)
-            {
-                ShowMonitors(new List<Monitor> { cheapest });
-                MessageBox.Show($"Найдешевший HDR-монітор: {cheapest.GetModel()} за {cheapest.GetPrice():N2} грн.",
-                                "Результат пошуку", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("Монітори з підтримкою HDR не знайдено.",
-                                "Результат пошуку", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            ShowTable(_manager.GetCheapestHdrTable());
         }
 
         // Кнопка "Видалити"
@@ -104,21 +77,21 @@ namespace Laba1OOP
             }
 
             int index = dataGridView1.CurrentRow.Index;
-            if (index < 0 || index >= _currentView.Count) return;
+            string model = _manager.GetModelAt(index);
+            if (model == null) return;
 
-            Monitor selected = _currentView[index];
-
-            DialogResult result = MessageBox.Show($"Видалити монітор {selected.GetModel()}?",
+            DialogResult result = MessageBox.Show($"Видалити монітор {model}?",
                                                   "Підтвердження",
                                                   MessageBoxButtons.YesNo,
                                                   MessageBoxIcon.Question);
 
             if (result == DialogResult.Yes)
             {
-                _manager.Remove(selected);
-                ShowMonitors(_manager.GetAll());
+                _manager.DeleteFromView(index);
+                ShowTable(_manager.GetAllTable());
             }
         }
+
         // Кнопка "Статистика"
         private void button6_Click(object sender, EventArgs e)
         {
@@ -129,8 +102,7 @@ namespace Laba1OOP
         // Кнопка "Сортувати за ціною"
         private void button7_Click(object sender, EventArgs e)
         {
-            _manager.SortByPrice();
-            ShowMonitors(_manager.GetAll());
+            ShowTable(_manager.GetSortedByPriceTable());
         }
     }
 }

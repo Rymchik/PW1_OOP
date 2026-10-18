@@ -20,6 +20,8 @@ namespace Laba1OOP.Class
             _price = 0m;
             _hasHdr = false;
         }
+
+        // Конструктор з параметрами
         public Monitor(string model, double diagonal, int refreshRate, decimal price, bool hasHdr)
         {
             SetModel(model);
@@ -87,34 +89,6 @@ namespace Laba1OOP.Class
         public void SetHasHdr(bool hasHdr)
         {
             _hasHdr = hasHdr;
-        }
-
-        // Розрахункові методи
-        public double GetGamingIndex()
-        {
-            return Math.Round((_refreshRate / 60.0) * (_hasHdr ? 1.25 : 1.0), 2);
-        }
-
-        public decimal GetPricePerInch()
-        {
-            if (_diagonal <= 0)
-                return 0m;
-            return Math.Round(_price / (decimal)_diagonal, 2);
-        }
-
-        public bool IsHighRefreshRate()
-        {
-            return _refreshRate == 144;
-        }
-        public string GetDescription()
-        {
-            return $"Модель: {_model}; діагональ: {_diagonal:F1}\"; частота: {_refreshRate} Гц; " +
-                   $"ціна: {_price:N2} грн; HDR: {(_hasHdr ? "так" : "ні")}; " +
-                   $"ігровий індекс: {GetGamingIndex():F2}; ціна за дюйм: {GetPricePerInch():N2} грн";
-        }
-        public override string ToString()
-        {
-            return $"{_model,-26} | {_diagonal,5:F1}\" | {_refreshRate,3} Гц | {_price,10:N2} грн | HDR: {(_hasHdr ? "так" : "ні")}";
         }
     }
 }
